@@ -7,8 +7,7 @@
 //  -The two bottomless pits will end your journey.
 //  -The two bats will drop you at a random location, and disorient you.
 //
-// Author: Christian Hughes
-// CIS 580 - Nathan Bean
+// Author: Christian J. Hughes
 
 window.onload = function ()
 {
