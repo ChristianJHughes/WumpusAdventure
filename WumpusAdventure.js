@@ -1,5 +1,12 @@
 // Wumpus Adventure.
 //
+// Controls: Use the arrow keys to move. The enter key begins a new game.
+//
+// Rules: Find the treasure, and make your way to the exit.
+//  -The Wumpus on the map will eat you.
+//  -The two bottomless pits will end your journey.
+//  -The two bats will drop you at a random location, and disorient you.
+//
 // Author: Christian Hughes
 // CIS 580 - Nathan Bean
 
@@ -39,6 +46,7 @@ window.onload = function ()
     currentStatus: 0
   };
 
+  // With properties describing win, loss, and gold ownership.
   var playerStats =
   {
     hasTreasure: false,
@@ -46,8 +54,7 @@ window.onload = function ()
     totalLosses: 0
   };
 
-  // Create all of the terain objects. The tilemap will consist of references to
-  // these objects.
+  // Create all of the terain objects. The tilemap will consist of references to these objects.
   var bat = new Terrain("#6699FF", terrainTypes.BAT, "You stepped on a bat! You have been flown to a random location on the map.<br />You're disoriented! You can't remember your path.", "There are bats nearby.");
   var wumpus = new Terrain("#CC0000", terrainTypes.WUMPUS, "The wumpus has eaten you! You're super dead.", "Oh no, the smell of a Wumpus lingers.");
   var treasure = new Terrain("#FFFF99", terrainTypes.TREASURE, "You found the treasure! To win, you need to get to the exit.", "");
@@ -68,6 +75,13 @@ window.onload = function ()
   // Creates the object that delegates the generation of textual status updates.
   var statusTextGenerator = new StatusTextGenerator();
 
+  // Constructor for a terrain object.
+  //
+  // Params:
+  // terainColor - Hex value for the color of the terrain.
+  // myTerrain - The terrain type. Can be expressed with the terrainTypes enumeration.
+  // activeMessage - The message used when the player is standing on the terrain.
+  // nearbyMessage - The message used when the player is surrounded by the terrain.
   function Terrain(terrainColor, myTerrain, activeMessage, nearbyMessage)
   {
     this.terrainColor = terrainColor;
@@ -76,6 +90,13 @@ window.onload = function ()
     this.nearbyMessage = nearbyMessage;
   };
 
+  // Constructor for a tile map object, of which there is only one.
+  //
+  // Params:
+  // mapHeight - The height of the map in tiles.
+  // mapWidth - The width of the map in tiles.
+  // tileWidth - The width of a single tile in pixels.
+  // tileHeight - The height of a single tile in pixels.
   function TileMap(mapHeight, mapWidth, tileWidth, tileHeight)
   {
     this.map = new Array(100);
@@ -83,11 +104,14 @@ window.onload = function ()
     this.mapWidth = mapWidth;
     this.tileWidth = tileWidth;
     this.tileHeight = tileHeight;
+
+    // Keeps track of the indexes in the array that have been visited by the player.
     this.exploredPath = [];
 
+    // Randomly generates a tile map, and store the entrance infomration into global variables.
     this.createRandomMap = function()
     {
-        // Fill the whole map with safe pathways (nothing).
+        // First, fill the whole map with safe pathways (nothing).
         for (var i = 0; i < this.map.length; i++)
         {
             this.map[i] = nothing;
@@ -106,7 +130,7 @@ window.onload = function ()
           return randomIndex;
         };
 
-        // Add all of our unique game elements to the map.
+        // Add all of our unique game elements to the map. No overlap is possible with the above function.
         this.map[getRandomIndex()] = enter;
         this.map[getRandomIndex()] = pit;
         this.map[getRandomIndex()] = pit;
@@ -128,9 +152,11 @@ window.onload = function ()
         else {
           entranceX = 0;
         }
+        // Add the entrance to the visible path.
         this.exploredPath.push(currentIndex);
     };
 
+    // Renders all of the tiles present in this.map, making sure to mask unvisited areas with darkness.
     this.renderEntity = function()
     {
         for(var y = 0; y < mapHeight; y++)
@@ -143,6 +169,7 @@ window.onload = function ()
             var yDrawPoint = y * tileHeight;
 
             // Draw a rectangle based on the color of the given terrain type.
+            // If the tile has not been visited yet, then it should be drawn as darkness.
             if (this.exploredPath.indexOf(y * 10 + x) == -1)
             {
               context1.fillStyle = darkness.terrainColor;
@@ -156,6 +183,7 @@ window.onload = function ()
         }
     };
 
+    // For use at the end of a game. Removes all darkness from the map.
     this.lightUpRoom = function()
     {
       for (var i = 0; i < 100; i++)
@@ -166,6 +194,8 @@ window.onload = function ()
 
   };
 
+  // Constructor for the little stickFigure sprite that moves around the map.
+  // The figues movements are in control of an event listener created herein.
   function stickFigurePlayer()
   {
     this.stickFigure = new Image();
@@ -173,14 +203,15 @@ window.onload = function ()
     this.y = entranceY;
     this.stickFigure.src = "stickFigure.png";
 
+    // The figure is rendered in the center of each block, begining with the entrance.
     this.renderEntity = function()
     {
       context1.drawImage(this.stickFigure, this.x + 12, this.y);
     };
 
-    // Move the player if an arrow key is pressed down.
+    // Move the player correctly via arrow keys, and advance the game with the enter key. Manages the game state.
     window.addEventListener('keydown', function(event) {
-        // If the game is in the start state and the player presses a key, advance the game to the PLAYING state.
+        // If the game is in the start state and the player presses an arrow key, advance the game to the PLAYING state.
         if (gameStatus.currentStatus == gameStatus.START && (event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 39 || event.keyCode === 40))
         {
           gameStatus.currentStatus = gameStatus.PLAYING;
@@ -212,7 +243,7 @@ window.onload = function ()
           statusTextGenerator.generateMainMessage();
 
           // If the player steps on a bat, then both the player and the bat must be transported to different areas of the map.
-          if (tileMap.map[currentIndex] == bat)
+          if (tileMap.map[currentIndex] == bat) // Deal with landing on a bat.
           {
             var randomIndexForBat;
             var randomIndexForHuman;
@@ -233,21 +264,22 @@ window.onload = function ()
               randomIndexForHuman = Math.floor(Math.random() * 100);
             }
             while (tileMap.map[randomIndexForHuman] !== nothing);
-
             stickFigure.y = Math.floor(randomIndexForHuman / 10) * 64;
             currentIndex = randomIndexForHuman;
             if (randomIndexForHuman % 10 > 0)
             {
               stickFigure.x = (randomIndexForHuman % 10) * 64;
             }
-            else {
+            else
+            {
               stickFigure.x = 0;
             }
           }
-          else if (tileMap.map[currentIndex] == treasure)
+          else if (tileMap.map[currentIndex] == treasure) // Deal with landing on the treasure.
           {
             playerStats.hasTreasure = true;
           }
+
           tileMap.exploredPath.push(currentIndex);
           statusTextGenerator.generateContextMessage();
 
@@ -256,6 +288,7 @@ window.onload = function ()
           if (tileMap.map[currentIndex] == exit && playerStats.hasTreasure == true)
           {
             tileMap.lightUpRoom();
+            playerStats.totalWins++;
             render();
             gameStatusPara.innerHTML = "<b>You escaped with the treasure! Victory is yours!<br /><br /><i>Press the enter key to go on another Wumpus Adventure.</i><br /></b>";
             gameStatus.currentStatus = gameStatus.VICTORY;
@@ -266,6 +299,7 @@ window.onload = function ()
           {
             // Render the canvas with the player in the pit or wumpus. The game loop stops here, and therefore this ensures that this frame is properly rendered.
             tileMap.lightUpRoom();
+            playerStats.totalLosses++;
             render();
             gameStatus.currentStatus = gameStatus.GAMEOVER;
             statusTextGenerator.updateEntity();
@@ -276,6 +310,7 @@ window.onload = function ()
       if (event.keyCode === 13 && (gameStatus.currentStatus == gameStatus.GAMEOVER || gameStatus.currentStatus == gameStatus.VICTORY))
       {
         gameStatus.currentStatus = gameStatus.START;
+        playerStats.hasTreasure = false;
         tileMap.exploredPath = [];
         tileMap.createRandomMap();
         statusTextGenerator.updateEntity();
@@ -286,6 +321,8 @@ window.onload = function ()
     });
   }
 
+  // This constructor creates the singular StatusTextGenerator.
+  // It displays the correct game information in a paragraph based on the game state.
   function StatusTextGenerator()
   {
 
@@ -299,24 +336,37 @@ window.onload = function ()
       }
     }
 
+    // A message based on the tile currently being stood on.
     this.generateMainMessage = function()
     {
+      var treasureString = "No.";
+      if (playerStats.hasTreasure)
+      {
+        treasureString = "Yes!"
+      }
+      var spacingString = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;"
+
+      // Maintains current status for the game in the paragraph element.
+      gameStatusPara.innerHTML = "<b style='color:red'>TOTAL WINS: " + playerStats.totalWins + spacingString + "TOTAL LOSES: " + playerStats.totalLosses + spacingString + "Treasure Claimed?: " + treasureString + "<br />";
+
+      // Displays the main user messged based on the game state.
       switch (gameStatus.currentStatus)
       {
         case gameStatus.START:
-          gameStatusPara.innerHTML = "<b>Welcome to the Wumpus Adventure! You begin at the entrance.<br /><br /><i>Find the treasure, and escape through the exit.</i><br /></b>";
+          gameStatusPara.innerHTML += "<b>Welcome to the Wumpus Adventure! You begin at the entrance.<br /><br /><i>Find the treasure, and escape through the exit. Move with the arrow keys.</i><br /></b>";
           break;
         case gameStatus.PLAYING:
-          gameStatusPara.innerHTML = "<b>" + tileMap.map[currentIndex].activeMessage + "</b><br />";
+          gameStatusPara.innerHTML += "<b>" + tileMap.map[currentIndex].activeMessage + "</b><br />";
           break;
         case gameStatus.GAMEOVER:
-          gameStatusPara.innerHTML = "<b>" + tileMap.map[currentIndex].activeMessage + "</b><br />";
+          gameStatusPara.innerHTML += "<b>" + tileMap.map[currentIndex].activeMessage + "</b><br />";
           break;
         default:
           return;
       }
     };
 
+    // Generates the messages derived from tiles surrounding the player. Searches through the 8 tiles surrounding the player.
     this.generateContextMessage = function()
     {
       if (currentIndex % 10 != 0)
@@ -378,6 +428,7 @@ window.onload = function ()
     }
   }
 
+  // Consolidates the render functions. Continously renders the tileMap, the stickFigure(player).
   function render()
   {
     context1.clearRect(0,0,640,640);
@@ -385,6 +436,7 @@ window.onload = function ()
     stickFigure.renderEntity();
   }
 
+  // The game loop continues until the player wins or loses.
   function gameLoop()
   {
     if (gameStatus.currentStatus != gameStatus.GAMEOVER && gameStatus.currentStatus != gameStatus.VICTORY)
@@ -394,10 +446,9 @@ window.onload = function ()
     }
   }
 
-  // Create the map, the player, and the stus text. Then begin gameplay (also triggers rendering).
+  // Create the map, the player, and the status text. Then begin gameplay (also triggers rendering).
   tileMap.createRandomMap();
   var stickFigure = new stickFigurePlayer();
   statusTextGenerator.updateEntity();
   gameLoop();
-
 };
