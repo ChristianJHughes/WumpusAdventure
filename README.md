@@ -19,4 +19,4 @@ Web based using vanilla HTML5 and Javascript. Rendering via the canvas element e
 
 ![Wumpus Screenshot1](http://i.imgur.com/J2FBKRO.png "Wumpus Screenshot1")
 
-![Wumpus Screenshot2](http://i.imgur.com/IzBobP7.png "Wumpus Screenshot2")
+![Wumpus Screenshot2](http://i.imgur.com/IzBobP7.png?1 "Wumpus Screenshot2")
