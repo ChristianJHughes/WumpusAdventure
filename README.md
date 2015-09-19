@@ -18,5 +18,5 @@ Web based using vanilla HTML5 and Javascript. Rendering via the canvas element e
 <b>Controls: </b> Use the <i>arrow keys</i> to move your character. Press <i>enter</i> to start a new game.
 
 ![Wumpus Screenshot1](http://i.imgur.com/J2FBKRO.png "Wumpus Screenshot1")
-
+<hr>
 ![Wumpus Screenshot2](http://i.imgur.com/IzBobP7.png?1 "Wumpus Screenshot2")
