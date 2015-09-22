@@ -1,7 +1,7 @@
 # Wumpus Adventure
 <b>A simple version of classic arcade game "Hunt the Wumpus."</b>
 
-<b><i>Play the game on its project page [here](http://christianjhughes.github.io/PerfectPong).</b></i>
+<b><i>Play the game on its project page [here](http://christianjhughes.github.io/WumpusAdventure/).</b></i>
 
 Web based using vanilla HTML5 and Javascript. Rendering via the canvas element ensures compatibility will all major browsers.
 
