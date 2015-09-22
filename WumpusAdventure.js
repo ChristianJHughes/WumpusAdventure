@@ -213,6 +213,7 @@ window.onload = function ()
         // If the game is in the start state and the player presses an arrow key, advance the game to the PLAYING state.
         if (gameStatus.currentStatus == gameStatus.START && (event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 39 || event.keyCode === 40))
         {
+          event.preventDefault();
           gameStatus.currentStatus = gameStatus.PLAYING;
         }
         // If the game is being played, evaluate all possible movement and update events.
@@ -220,21 +221,25 @@ window.onload = function ()
         {
           if (event.keyCode === 37 && (stickFigure.x - tileMap.tileWidth) >= 0) // Left arrow
           {
+            event.preventDefault();
             stickFigure.x -= tileMap.tileWidth;
             currentIndex--;
           }
           else if (event.keyCode === 38 && (stickFigure.y - tileMap.tileHeight) >= 0) // Up arrow
           {
+            event.preventDefault();
             stickFigure.y -= tileMap.tileHeight;
             currentIndex -= tileMap.mapWidth;
           }
           else if (event.keyCode === 39 && (stickFigure.x + tileMap.tileWidth) < (tileMap.mapWidth * tileMap.tileWidth)) // Right arrow
           {
+            event.preventDefault();
             stickFigure.x += tileMap.tileWidth;
             currentIndex++;
           }
           else if (event.keyCode === 40 && (stickFigure.y + tileMap.tileHeight) < (tileMap.mapHeight * tileMap.tileHeight)) // Down arrow
           {
+            event.preventDefault();
             stickFigure.y += tileMap.tileHeight;
             currentIndex += tileMap.mapWidth;
           }
